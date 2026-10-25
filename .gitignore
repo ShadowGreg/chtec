@@ -1,0 +1,15 @@
+# сборка
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+*.iml
+# ключ подписи APK — не публикуем
+*.keystore
+*.jks
+# Python
+__pycache__/
+*.pyc
+# озвучка, созданная при запуске
+desktop/examples/*.mp3

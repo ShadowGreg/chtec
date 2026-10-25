@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/page"
+    android:orientation="vertical">
+
+    <!-- Верхняя панель -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/primary"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:minHeight="56dp"
+        android:orientation="horizontal"
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp">
+
+        <ImageButton
+            android:id="@+id/library"
+            style="@style/IconButton"
+            android:contentDescription="Библиотека"
+            android:src="@drawable/ic_back" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/fileName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="middle"
+                android:singleLine="true"
+                android:text="Чтец"
+                android:textColor="#FFFFFFFF"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/roles"
+            style="@style/IconButton"
+            android:contentDescription="Роли"
+            android:src="@drawable/ic_people" />
+
+        <ImageButton
+            android:id="@+id/edit"
+            style="@style/IconButton"
+            android:contentDescription="Правка текста"
+            android:src="@drawable/ic_edit" />
+
+        <ImageButton
+            android:id="@+id/bookmarks"
+            style="@style/IconButton"
+            android:contentDescription="Закладки"
+            android:src="@drawable/ic_bookmarks" />
+
+        <ImageButton
+            android:id="@+id/settings"
+            style="@style/IconButton"
+            android:contentDescription="Голос и вид"
+            android:src="@drawable/ic_tune" />
+    </LinearLayout>
+
+    <!-- Текст книги -->
+    <EditText
+        android:id="@+id/text"
+        android:saveEnabled="false"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@null"
+        android:fontFamily="serif"
+        android:gravity="top|start"
+        android:hint="Вставьте сюда свой текст (режим правки ✎) или выберите книгу в библиотеке ←"
+        android:importantForAutofill="no"
+        android:inputType="textMultiLine|textNoSuggestions"
+        android:lineSpacingMultiplier="1.3"
+        android:paddingBottom="24dp"
+        android:paddingEnd="20dp"
+        android:paddingStart="20dp"
+        android:paddingTop="16dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollbars="vertical"
+        android:textColor="@color/ink"
+        android:textColorHighlight="#55E0912F"
+        android:textColorHint="@color/ink_soft"
+        android:textSize="19sp" />
+
+    <!-- Плеер -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_player"
+        android:elevation="12dp"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp">
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:max="1000"
+            android:progressBackgroundTint="#22000000"
+            android:progressTint="@color/accent" />
+
+        <TextView
+            android:id="@+id/now"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:minLines="2"
+            android:text="Поставьте курсор, откуда читать, и нажмите ▶"
+            android:textColor="@color/ink_soft"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/bookmarkAdd"
+                style="@style/IconButton"
+                android:contentDescription="Добавить закладку"
+                android:src="@drawable/ic_bookmark_add"
+                android:tint="@color/primary" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/prev"
+                style="@style/IconButton"
+                android:contentDescription="Назад на фразу"
+                android:src="@drawable/ic_prev"
+                android:tint="@color/ink" />
+
+            <ImageButton
+                android:id="@+id/play"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_play"
+                android:contentDescription="Слушать"
+                android:elevation="4dp"
+                android:padding="16dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_play" />
+
+            <ImageButton
+                android:id="@+id/next"
+                style="@style/IconButton"
+                android:contentDescription="Вперёд на фразу"
+                android:src="@drawable/ic_next"
+                android:tint="@color/ink" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/stop"
+                style="@style/IconButton"
+                android:contentDescription="Стоп"
+                android:src="@drawable/ic_stop"
+                android:tint="@color/ink" />
+
+            <ImageButton
+                android:id="@+id/more"
+                style="@style/IconButton"
+                android:contentDescription="Ещё"
+                android:src="@drawable/ic_more"
+                android:tint="@color/ink" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

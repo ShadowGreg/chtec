@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingEnd="24dp"
+        android:paddingStart="24dp"
+        android:paddingTop="8dp">
+
+        <TextView style="@style/SettingsHeader" android:text="Голос" />
+
+        <Spinner
+            android:id="@+id/engine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:id="@+id/edgeBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/SettingsLabel" android:text="Microsoft — рассказчик" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/edgeNarrator"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/previewEdge"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="▶ Проба"
+                    android:textColor="@color/primary" />
+            </LinearLayout>
+
+            <TextView style="@style/SettingsLabel" android:text="Microsoft — реплики персонажей" />
+
+            <Spinner
+                android:id="@+id/edgeCharacter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/systemBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView style="@style/SettingsLabel" android:text="Синтезаторы речи в телефоне" />
+
+            <TextView
+                android:id="@+id/systemEngineInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/ink_soft"
+                android:textSize="12sp" />
+
+            <TextView style="@style/SettingsLabel" android:text="Голос телефона — рассказчик" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/systemNarrator"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/previewSystem"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="▶ Проба"
+                    android:textColor="@color/primary" />
+            </LinearLayout>
+
+            <TextView style="@style/SettingsLabel" android:text="Голос телефона — реплики персонажей" />
+
+            <Spinner
+                android:id="@+id/systemCharacter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/systemProblem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFB3261E"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/ttsSettings"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Скачать голоса телефона…"
+                android:textColor="@color/primary" />
+
+            <Button
+                android:id="@+id/installRhvoice"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ещё голоса: установить RHVoice (бесплатно, офлайн)"
+                android:textColor="@color/primary" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/rateLabel"
+            style="@style/SettingsLabel" />
+
+        <SeekBar
+            android:id="@+id/rate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100" />
+
+        <TextView
+            android:id="@+id/pitchLabel"
+            style="@style/SettingsLabel" />
+
+        <SeekBar
+            android:id="@+id/pitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="60" />
+
+        <CheckBox
+            android:id="@+id/expressive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Актёрская интонация (вопросы, восклицания, многоточия, диалоги)" />
+
+        <TextView style="@style/SettingsHeader" android:text="Вид" />
+
+        <TextView
+            android:id="@+id/fontLabel"
+            style="@style/SettingsLabel" />
+
+        <SeekBar
+            android:id="@+id/fontSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="16" />
+
+        <CheckBox
+            android:id="@+id/follow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Прокручивать текст за чтением" />
+
+        <TextView style="@style/SettingsHeader" android:text="Проверка" />
+
+        <TextView
+            style="@style/SettingsLabel"
+            android:text="Проверит на этом телефоне каждый голос и связь с Microsoft и составит отчёт, который можно отправить." />
+
+        <Button
+            android:id="@+id/diagnostics"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Проверить голоса и связь"
+            android:textColor="@color/primary" />
+
+        <TextView style="@style/SettingsHeader" android:text="Офлайн" />
+
+        <TextView
+            android:id="@+id/cacheInfo"
+            style="@style/SettingsLabel" />
+
+        <Button
+            android:id="@+id/clearCache"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Очистить сохранённую озвучку"
+            android:textColor="@color/primary" />
+    </LinearLayout>
+</ScrollView>
