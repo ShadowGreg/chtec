@@ -13,7 +13,7 @@ sed 's|<manifest |<manifest package="ru.chtec" |' app/src/main/AndroidManifest.x
 
 aapt package -f -m --auto-add-overlay \
     -M "$OUT/AndroidManifest.xml" -S app/src/main/res -I "$ANDROID_JAR" -J "$OUT/gen" \
-    --min-sdk-version 24 --target-sdk-version 34 --version-code 6 --version-name 1.5 \
+    --min-sdk-version 24 --target-sdk-version 34 --version-code 7 --version-name 1.6 \
     -F "$OUT/app.unaligned.apk"
 
 find app/src/main/java "$OUT/gen" -name '*.java' > "$OUT/sources.txt"

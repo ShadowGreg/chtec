@@ -18,36 +18,35 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <TextView style="@style/SettingsHeader" android:text="Чтецы" />
+
+        <TextView
+            style="@style/SettingsLabel"
+            android:layout_marginTop="0dp"
+            android:text="Выберите, кто читает. ▶ — послушать чтеца, ✎ — настроить голос, темп и высоту." />
+
+        <LinearLayout
+            android:id="@+id/readers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/addReader"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="＋ Добавить чтеца"
+            android:textColor="@color/primary" />
+
         <LinearLayout
             android:id="@+id/edgeBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView style="@style/SettingsLabel" android:text="Microsoft — рассказчик" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <Spinner
-                    android:id="@+id/edgeNarrator"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
-                <Button
-                    android:id="@+id/previewEdge"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="▶ Проба"
-                    android:textColor="@color/primary" />
-            </LinearLayout>
-
-            <TextView style="@style/SettingsLabel" android:text="Microsoft — реплики персонажей" />
+            <TextView style="@style/SettingsLabel" android:text="Персонажи без своей роли — голос Microsoft" />
 
             <Spinner
                 android:id="@+id/edgeCharacter"
@@ -70,30 +69,8 @@
                 android:textColor="@color/ink_soft"
                 android:textSize="12sp" />
 
-            <TextView style="@style/SettingsLabel" android:text="Голос телефона — рассказчик" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <Spinner
-                    android:id="@+id/systemNarrator"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
-                <Button
-                    android:id="@+id/previewSystem"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="▶ Проба"
-                    android:textColor="@color/primary" />
-            </LinearLayout>
-
-            <TextView style="@style/SettingsLabel" android:text="Голос телефона — реплики персонажей" />
+            <TextView style="@style/SettingsLabel" android:text="Персонажи без своей роли — голос телефона" />
 
             <Spinner
                 android:id="@+id/systemCharacter"
@@ -125,25 +102,6 @@
                 android:textColor="@color/primary" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/rateLabel"
-            style="@style/SettingsLabel" />
-
-        <SeekBar
-            android:id="@+id/rate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100" />
-
-        <TextView
-            android:id="@+id/pitchLabel"
-            style="@style/SettingsLabel" />
-
-        <SeekBar
-            android:id="@+id/pitch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="60" />
 
         <CheckBox
             android:id="@+id/expressive"

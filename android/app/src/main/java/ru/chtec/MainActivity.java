@@ -29,6 +29,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -528,6 +529,28 @@ public class MainActivity extends Activity implements ReaderService.Listener {
         rate.setMax(40);
         pitch.setProgress(r.pitch + 20);
         rate.setProgress(r.rate + 20);
+
+        // Быстро: взять голос у одного из чтецов.
+        final List<Readers.Reader> readers = Readers.load(this, settings);
+        List<String> rn = new ArrayList<>();
+        rn.add("—");
+        for (Readers.Reader x : readers) rn.add(x.name);
+        final Spinner fromReader = new Spinner(this);
+        fromReader.setAdapter(adapter(rn.toArray(new String[0])));
+        fromReader.setOnItemSelectedListener(new Select() {
+            @Override
+            void selected(int pos) {
+                if (pos == 0) return;
+                Readers.Reader x = readers.get(pos - 1);
+                edge.setSelection(EdgeTts.SVETLANA.equals(x.edge) ? 1 : 0);
+                int k = phoneKeys.indexOf(x.phone);
+                phoneSp.setSelection(Math.max(0, k));
+                pitch.setProgress(Math.max(0, Math.min(40, x.pitch + 20)));
+                rate.setProgress(Math.max(0, Math.min(40, x.rate + 20)));
+            }
+        });
+        box.addView(label("Взять голос у чтеца"), 2);
+        box.addView(fromReader, 3);
         final Runnable labels = new Runnable() {
             @Override
             public void run() {
@@ -1028,19 +1051,13 @@ public class MainActivity extends Activity implements ReaderService.Listener {
     private void showSettings() {
         final View v = LayoutInflater.from(this).inflate(R.layout.dialog_settings, null);
         final Spinner engine = (Spinner) v.findViewById(R.id.engine);
-        final Spinner edgeNarrator = (Spinner) v.findViewById(R.id.edgeNarrator);
         final Spinner edgeCharacter = (Spinner) v.findViewById(R.id.edgeCharacter);
-        final Spinner sysNarrator = (Spinner) v.findViewById(R.id.systemNarrator);
         final Spinner sysCharacter = (Spinner) v.findViewById(R.id.systemCharacter);
         final View edgeBox = v.findViewById(R.id.edgeBox), systemBox = v.findViewById(R.id.systemBox);
         final TextView problem = (TextView) v.findViewById(R.id.systemProblem);
         final TextView engineInfo = (TextView) v.findViewById(R.id.systemEngineInfo);
-        final TextView rateLabel = (TextView) v.findViewById(R.id.rateLabel);
-        final TextView pitchLabel = (TextView) v.findViewById(R.id.pitchLabel);
         final TextView fontLabel = (TextView) v.findViewById(R.id.fontLabel);
         final TextView cacheInfo = (TextView) v.findViewById(R.id.cacheInfo);
-        final SeekBar rate = (SeekBar) v.findViewById(R.id.rate);
-        final SeekBar pitch = (SeekBar) v.findViewById(R.id.pitch);
         final SeekBar font = (SeekBar) v.findViewById(R.id.fontSize);
         final CheckBox expressive = (CheckBox) v.findViewById(R.id.expressive);
         final CheckBox follow = (CheckBox) v.findViewById(R.id.follow);
@@ -1069,29 +1086,59 @@ public class MainActivity extends Activity implements ReaderService.Listener {
             }
         });
 
-        // Голоса Microsoft
+        // Голос Microsoft для персонажей без своей роли
         List<String> chars = new ArrayList<>();
-        chars.add("Тот же голос, чуть живее");
-        int nSel = 0, cSel = 0;
+        chars.add("Голос чтеца, чуть живее");
+        int cSel = 0;
         for (int i = 0; i < EDGE_IDS.length; i++) {
             chars.add(EDGE_NAMES[i]);
-            if (EDGE_IDS[i].equals(settings.edgeNarrator)) nSel = i;
             if (EDGE_IDS[i].equals(settings.edgeCharacter)) cSel = i + 1;
         }
-        edgeNarrator.setAdapter(adapter(EDGE_NAMES));
-        edgeNarrator.setSelection(nSel);
         edgeCharacter.setAdapter(adapter(chars.toArray(new String[0])));
         edgeCharacter.setSelection(cSel);
-        edgeNarrator.setOnItemSelectedListener(new Select() {
-            @Override
-            void selected(int pos) {
-                settings.edgeNarrator = EDGE_IDS[pos];
-            }
-        });
         edgeCharacter.setOnItemSelectedListener(new Select() {
             @Override
             void selected(int pos) {
                 settings.edgeCharacter = pos == 0 ? "" : EDGE_IDS[pos - 1];
+            }
+        });
+
+        // Чтецы
+        final LinearLayout readersBox = (LinearLayout) v.findViewById(R.id.readers);
+        final List<Readers.Reader> readers = Readers.load(this, settings);
+        final String[] active = {Readers.activeId(this)};
+        final Runnable[] rebuild = new Runnable[1];
+        rebuild[0] = new Runnable() {
+            @Override
+            public void run() {
+                List<PhoneVoices.Item> phone = service != null ? service.getPhoneVoices() : new ArrayList<PhoneVoices.Item>();
+                readersBox.removeAllViews();
+                for (final Readers.Reader r : readers) {
+                    readersBox.addView(readerRow(r, r.id.equals(active[0]), phone, new Runnable() {
+                        @Override
+                        public void run() { // выбрать
+                            active[0] = r.id;
+                            Readers.apply(r, settings);
+                            Readers.save(MainActivity.this, readers, active[0]);
+                            rebuild[0].run();
+                        }
+                    }, new Runnable() {
+                        @Override
+                        public void run() { // настроить
+                            editReader(r, readers, active, rebuild[0]);
+                        }
+                    }));
+                }
+            }
+        };
+        rebuild[0].run();
+        v.findViewById(R.id.addReader).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View b) {
+                Readers.Reader r = new Readers.Reader();
+                r.id = "r" + System.currentTimeMillis();
+                r.name = "Чтец " + (readers.size() + 1);
+                editReader(r, readers, active, rebuild[0]);
             }
         });
 
@@ -1101,30 +1148,18 @@ public class MainActivity extends Activity implements ReaderService.Listener {
             @Override
             public void run() {
                 final List<String> keys = new ArrayList<>();
-                List<String> names = new ArrayList<>(), charNames = new ArrayList<>();
-                String mainLabel = service != null ? service.mainEngineLabel(settings) : "";
-                names.add("Стандартный голос телефона (" + mainLabel + ")");
-                charNames.add("Тот же голос, чуть живее");
+                List<String> charNames = new ArrayList<>();
+                charNames.add("Голос чтеца, чуть живее");
                 List<PhoneVoices.Item> items = service != null ? service.getPhoneVoices() : new ArrayList<PhoneVoices.Item>();
-                final int ns = indexOfVoice(items, settings.systemNarrator);
                 final int cs = indexOfVoice(items, settings.systemCharacter);
                 for (PhoneVoices.Item it : items) {
                     keys.add(it.key);
-                    names.add(it.label);
                     charNames.add(it.label);
                 }
-                sysNarrator.setAdapter(adapter(names.toArray(new String[0])));
                 sysCharacter.setAdapter(adapter(charNames.toArray(new String[0])));
-                sysNarrator.setSelection(ns);
                 sysCharacter.setSelection(cs);
                 // Начальный вызов слушателя (та же позиция) настройки не меняет — выбранный голос не сбросится,
                 // даже если его синтезатор ещё подключается.
-                sysNarrator.setOnItemSelectedListener(new Select() {
-                    @Override
-                    void selected(int pos) {
-                        if (pos != ns) settings.systemNarrator = pos == 0 ? "" : keys.get(pos - 1);
-                    }
-                });
                 sysCharacter.setOnItemSelectedListener(new Select() {
                     @Override
                     void selected(int pos) {
@@ -1159,6 +1194,7 @@ public class MainActivity extends Activity implements ReaderService.Listener {
                 String why = service != null ? service.phoneProblem(settings) : null;
                 problem.setVisibility(why != null ? View.VISIBLE : View.GONE);
                 problem.setText(why);
+                rebuild[0].run(); // подписи голосов телефона у чтецов
             }
         };
         settingsDialogRefresh.run();
@@ -1174,18 +1210,6 @@ public class MainActivity extends Activity implements ReaderService.Listener {
                 runDiagnostics();
             }
         });
-        v.findViewById(R.id.previewSystem).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View b) {
-                if (service != null) service.preview(settings.copy(), false);
-            }
-        });
-        v.findViewById(R.id.previewEdge).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View b) {
-                if (service != null) service.preview(settings.copy(), true);
-            }
-        });
         v.findViewById(R.id.ttsSettings).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View b) {
@@ -1197,14 +1221,10 @@ public class MainActivity extends Activity implements ReaderService.Listener {
         });
 
         // Темп, высота, шрифт
-        rate.setProgress(settings.rate + 50);
-        pitch.setProgress(settings.pitch + 30);
         font.setProgress(settings.fontSize - 14);
         final Runnable labels = new Runnable() {
             @Override
             public void run() {
-                rateLabel.setText("Темп: " + signed(settings.rate) + "%");
-                pitchLabel.setText("Высота голоса: " + signed(settings.pitch));
                 fontLabel.setText("Размер текста: " + settings.fontSize);
             }
         };
@@ -1212,8 +1232,6 @@ public class MainActivity extends Activity implements ReaderService.Listener {
         SeekBar.OnSeekBarChangeListener seek = new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar bar, int value, boolean fromUser) {
-                settings.rate = rate.getProgress() - 50;
-                settings.pitch = pitch.getProgress() - 30;
                 settings.fontSize = font.getProgress() + 14;
                 text.setTextSize(settings.fontSize);
                 labels.run();
@@ -1227,8 +1245,6 @@ public class MainActivity extends Activity implements ReaderService.Listener {
             public void onStopTrackingTouch(SeekBar bar) {
             }
         };
-        rate.setOnSeekBarChangeListener(seek);
-        pitch.setOnSeekBarChangeListener(seek);
         font.setOnSeekBarChangeListener(seek);
         expressive.setChecked(settings.expressive);
         follow.setChecked(settings.follow);
@@ -1353,8 +1369,240 @@ public class MainActivity extends Activity implements ReaderService.Listener {
         return 0;
     }
 
+    /** Список для выпадающего меню: длинные названия голосов переносятся на несколько строк, а не обрезаются. */
     private ArrayAdapter<String> adapter(String[] items) {
-        return new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
+        ArrayAdapter<String> a = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items) {
+            @Override
+            public View getView(int pos, View convert, ViewGroup parent) {
+                return wrapLines(super.getView(pos, convert, parent), 3);
+            }
+
+            @Override
+            public View getDropDownView(int pos, View convert, ViewGroup parent) {
+                return wrapLines(super.getDropDownView(pos, convert, parent), 6);
+            }
+        };
+        a.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        return a;
+    }
+
+    private View wrapLines(View v, int maxLines) {
+        if (v instanceof TextView) {
+            TextView t = (TextView) v;
+            t.setSingleLine(false);
+            t.setHorizontallyScrolling(false);
+            t.setMaxLines(maxLines);
+            t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            int dp = (int) getResources().getDisplayMetrics().density;
+            t.setPadding(t.getPaddingLeft(), 8 * dp, t.getPaddingRight(), 8 * dp);
+            t.setMinHeight(44 * dp);
+            ViewGroup.LayoutParams lp = t.getLayoutParams();
+            if (lp != null) lp.height = ViewGroup.LayoutParams.WRAP_CONTENT; // у пункта меню высота фиксирована
+        }
+        return v;
+    }
+
+    /** Строка чтеца: кружок выбора, имя, голоса; ▶ — проба, ✎ — настройка. */
+    private View readerRow(final Readers.Reader r, boolean active, List<PhoneVoices.Item> phone,
+                           final Runnable onSelect, final Runnable onEdit) {
+        int dp = (int) getResources().getDisplayMetrics().density;
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        row.setPadding(0, 6 * dp, 0, 6 * dp);
+        android.widget.RadioButton rb = new android.widget.RadioButton(this);
+        rb.setChecked(active);
+        rb.setClickable(false);
+        row.addView(rb);
+        LinearLayout texts = new LinearLayout(this);
+        texts.setOrientation(LinearLayout.VERTICAL);
+        TextView name = new TextView(this);
+        name.setText(r.name + (active ? "  — читает" : ""));
+        name.setTextSize(15);
+        name.setTextColor(getResources().getColor(active ? R.color.primary : R.color.ink));
+        name.setTypeface(null, android.graphics.Typeface.BOLD);
+        TextView desc = new TextView(this);
+        desc.setText(Readers.describe(r, phone));
+        desc.setTextSize(12);
+        desc.setTextColor(getResources().getColor(R.color.ink_soft));
+        texts.addView(name);
+        texts.addView(desc);
+        row.addView(texts, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        ImageButton probe = new ImageButton(this);
+        probe.setImageResource(R.drawable.ic_play);
+        probe.setColorFilter(getResources().getColor(R.color.primary));
+        probe.setBackgroundResource(android.R.color.transparent);
+        probe.setContentDescription("Послушать " + r.name);
+        probe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View b) {
+                previewReader(r, microsoftMode());
+            }
+        });
+        row.addView(probe, new LinearLayout.LayoutParams(44 * dp, 44 * dp));
+        ImageButton edit = new ImageButton(this);
+        edit.setImageResource(R.drawable.ic_edit);
+        edit.setColorFilter(getResources().getColor(R.color.ink_soft));
+        edit.setBackgroundResource(android.R.color.transparent);
+        edit.setContentDescription("Настроить " + r.name);
+        edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View b) {
+                onEdit.run();
+            }
+        });
+        row.addView(edit, new LinearLayout.LayoutParams(44 * dp, 44 * dp));
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View b) {
+                onSelect.run();
+            }
+        });
+        return row;
+    }
+
+    private void previewReader(Readers.Reader r, boolean microsoft) {
+        if (service == null) return;
+        Settings s = settings.copy();
+        s.rate = 0;
+        s.pitch = 0;
+        service.previewRole(r.edge, r.phone, r.pitch, r.rate, s, microsoft);
+    }
+
+    /** Настройка чтеца: имя, голос Microsoft, голос телефона, темп, высота и проба обоих голосов. */
+    private void editReader(final Readers.Reader r, final List<Readers.Reader> readers, final String[] active,
+                            final Runnable done) {
+        final boolean isNew = !readers.contains(r);
+        final List<PhoneVoices.Item> phone = service != null ? service.getPhoneVoices() : new ArrayList<PhoneVoices.Item>();
+        int dp = (int) getResources().getDisplayMetrics().density;
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(20 * dp, 8 * dp, 20 * dp, 0);
+
+        final EditText name = new EditText(this);
+        name.setText(r.name);
+        name.setSingleLine(true);
+        box.addView(label("Имя"));
+        box.addView(name);
+
+        final Spinner edge = new Spinner(this);
+        edge.setAdapter(adapter(EDGE_NAMES));
+        edge.setSelection(EdgeTts.SVETLANA.equals(r.edge) ? 1 : 0);
+        box.addView(label("Голос Microsoft"));
+        box.addView(edge);
+
+        final List<String> keys = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        keys.add("");
+        names.add("Стандартный голос телефона" + (service != null ? " (" + service.mainEngineLabel(settings) + ")" : ""));
+        int ps = 0;
+        for (PhoneVoices.Item it : phone) {
+            keys.add(it.key);
+            names.add(it.label);
+            if (it.key.equals(r.phone)) ps = keys.size() - 1;
+        }
+        final Spinner phoneSp = new Spinner(this);
+        phoneSp.setAdapter(adapter(names.toArray(new String[0])));
+        phoneSp.setSelection(ps);
+        box.addView(label("Голос телефона"));
+        box.addView(phoneSp);
+
+        final TextView rateL = label(""), pitchL = label("");
+        final SeekBar rate = new SeekBar(this), pitch = new SeekBar(this);
+        rate.setMax(100);
+        pitch.setMax(60);
+        rate.setProgress(r.rate + 50);
+        pitch.setProgress(r.pitch + 30);
+        final Runnable labels = new Runnable() {
+            @Override
+            public void run() {
+                rateL.setText("Темп: " + signed(rate.getProgress() - 50) + "%");
+                pitchL.setText("Высота голоса: " + signed(pitch.getProgress() - 30));
+            }
+        };
+        labels.run();
+        SeekBar.OnSeekBarChangeListener l = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar b, int v, boolean u) {
+                labels.run();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar b) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar b) {
+            }
+        };
+        rate.setOnSeekBarChangeListener(l);
+        pitch.setOnSeekBarChangeListener(l);
+        box.addView(rateL);
+        box.addView(rate);
+        box.addView(pitchL);
+        box.addView(pitch);
+
+        // Проба: каждым из двух голосов с текущими ползунками
+        LinearLayout probes = new LinearLayout(this);
+        probes.setOrientation(LinearLayout.HORIZONTAL);
+        for (final boolean ms : new boolean[]{true, false}) {
+            android.widget.Button b = new android.widget.Button(this, null, android.R.attr.borderlessButtonStyle);
+            b.setText(ms ? "▶ Microsoft" : "▶ Телефон");
+            b.setTextColor(getResources().getColor(R.color.primary));
+            b.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View x) {
+                    Readers.Reader t = new Readers.Reader();
+                    t.edge = EDGE_IDS[edge.getSelectedItemPosition()];
+                    t.phone = keys.get(phoneSp.getSelectedItemPosition());
+                    t.rate = rate.getProgress() - 50;
+                    t.pitch = pitch.getProgress() - 30;
+                    previewReader(t, ms);
+                }
+            });
+            probes.addView(b);
+        }
+        box.addView(probes);
+
+        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
+        scroll.addView(box);
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this)
+                .setTitle(isNew ? "Новый чтец" : "Чтец")
+                .setView(scroll)
+                .setPositiveButton("Сохранить", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface d, int w) {
+                        String n = name.getText().toString().trim();
+                        r.name = n.isEmpty() ? "Чтец" : n;
+                        r.edge = EDGE_IDS[edge.getSelectedItemPosition()];
+                        r.phone = keys.get(phoneSp.getSelectedItemPosition());
+                        r.rate = rate.getProgress() - 50;
+                        r.pitch = pitch.getProgress() - 30;
+                        if (isNew) {
+                            readers.add(r);
+                            active[0] = r.id; // новый чтец сразу читает
+                        }
+                        if (r.id.equals(active[0])) Readers.apply(r, settings);
+                        Readers.save(MainActivity.this, readers, active[0]);
+                        done.run();
+                    }
+                })
+                .setNegativeButton("Отмена", null);
+        if (!isNew && readers.size() > 1) {
+            dlg.setNeutralButton("Удалить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface d, int w) {
+                    readers.remove(r);
+                    if (r.id.equals(active[0])) {
+                        active[0] = readers.get(0).id;
+                        Readers.apply(readers.get(0), settings);
+                    }
+                    Readers.save(MainActivity.this, readers, active[0]);
+                    done.run();
+                }
+            });
+        }
+        dlg.show();
     }
 
     private static String signed(int v) {
