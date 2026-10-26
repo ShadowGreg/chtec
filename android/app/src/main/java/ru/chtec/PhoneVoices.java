@@ -296,7 +296,7 @@ final class PhoneVoices {
             if (e.voices.isEmpty() && e.russianLanguage) {
                 Item it = new Item();
                 it.key = e.pkg + "|";
-                it.label = e.label + " · стандартный голос";
+                it.label = e.label + "\nстандартный голос";
                 it.russian = true;
                 ru.add(it);
             }
@@ -306,7 +306,8 @@ final class PhoneVoices {
                 it.russian = isRussian(v);
                 String kind = v.isNetworkConnectionRequired() ? "нужен интернет" : "офлайн";
                 String lang = v.getLocale() == null ? "?" : v.getLocale().getDisplayLanguage(display);
-                it.label = e.label + " · " + v.getName() + " (" + (it.russian ? "" : lang + ", ") + kind + ")";
+                // Две строки: синтезатор, затем голос — так длинное название читается целиком.
+                it.label = e.label + "\n" + v.getName() + " (" + (it.russian ? "" : lang + ", ") + kind + ")";
                 (it.russian ? ru : other).add(it);
             }
         }

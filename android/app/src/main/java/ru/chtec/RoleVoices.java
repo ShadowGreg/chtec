@@ -82,7 +82,7 @@ final class RoleVoices {
             voice = EdgeTts.SVETLANA.equals(r.edgeVoice) ? "Светлана" : "Дмитрий";
         } else {
             voice = "стандартный голос";
-            for (PhoneVoices.Item it : phone) if (it.key.equals(r.phoneVoice)) voice = it.label;
+            for (PhoneVoices.Item it : phone) if (it.key.equals(r.phoneVoice)) voice = it.label.replace("\n", " · ");
         }
         String tone = r.pitch == 0 ? "" : r.pitch < 0 ? ", ниже" : ", выше";
         String speed = r.rate == 0 ? "" : r.rate < 0 ? ", медленнее" : ", быстрее";

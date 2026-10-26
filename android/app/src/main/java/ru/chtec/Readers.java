@@ -97,7 +97,7 @@ final class Readers {
     static String describe(Reader r, List<PhoneVoices.Item> phone) {
         String edge = EdgeTts.SVETLANA.equals(r.edge) ? "Светлана" : "Дмитрий";
         String ph = "стандартный голос";
-        for (PhoneVoices.Item it : phone) if (it.key.equals(r.phone)) ph = it.label;
+        for (PhoneVoices.Item it : phone) if (it.key.equals(r.phone)) ph = it.label.replace("\n", " · ");
         StringBuilder sb = new StringBuilder("Microsoft: ").append(edge).append("\nТелефон: ").append(ph);
         if (r.rate != 0) sb.append("\nТемп ").append(r.rate > 0 ? "+" : "").append(r.rate).append('%');
         if (r.pitch != 0) sb.append(r.rate != 0 ? ", высота " : "\nВысота ").append(r.pitch > 0 ? "+" : "").append(r.pitch);

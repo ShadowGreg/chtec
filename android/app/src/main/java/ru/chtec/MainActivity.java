@@ -1371,35 +1371,9 @@ public class MainActivity extends Activity implements ReaderService.Listener {
 
     /** Список для выпадающего меню: длинные названия голосов переносятся на несколько строк, а не обрезаются. */
     private ArrayAdapter<String> adapter(String[] items) {
-        ArrayAdapter<String> a = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items) {
-            @Override
-            public View getView(int pos, View convert, ViewGroup parent) {
-                return wrapLines(super.getView(pos, convert, parent), 3);
-            }
-
-            @Override
-            public View getDropDownView(int pos, View convert, ViewGroup parent) {
-                return wrapLines(super.getDropDownView(pos, convert, parent), 6);
-            }
-        };
-        a.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> a = new ArrayAdapter<>(this, R.layout.spinner_item, items);
+        a.setDropDownViewResource(R.layout.spinner_dropdown_item);
         return a;
-    }
-
-    private View wrapLines(View v, int maxLines) {
-        if (v instanceof TextView) {
-            TextView t = (TextView) v;
-            t.setSingleLine(false);
-            t.setHorizontallyScrolling(false);
-            t.setMaxLines(maxLines);
-            t.setEllipsize(android.text.TextUtils.TruncateAt.END);
-            int dp = (int) getResources().getDisplayMetrics().density;
-            t.setPadding(t.getPaddingLeft(), 8 * dp, t.getPaddingRight(), 8 * dp);
-            t.setMinHeight(44 * dp);
-            ViewGroup.LayoutParams lp = t.getLayoutParams();
-            if (lp != null) lp.height = ViewGroup.LayoutParams.WRAP_CONTENT; // у пункта меню высота фиксирована
-        }
-        return v;
     }
 
     /** Строка чтеца: кружок выбора, имя, голоса; ▶ — проба, ✎ — настройка. */
